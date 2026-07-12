@@ -1,0 +1,129 @@
+[project]
+name = "st-eze"
+version = "0.1.0"
+description = "eZe Streamlit Application"
+readme = "README.md"
+requires-python = ">=3.14"
+license = "MIT"
+# Shared dependencies used by both apps
+dependencies = [
+    "pydantic>=2.13.0, <3.0.0",
+    "pillow>=12.2.0,<13.0.0",
+    "pydantic-settings>=2.13.0, <3.0.0",
+    "python-dotenv>=1.2.2, <2.0.0",
+    "psycopg>=3.3.4, <4.0.0; sys_platform == 'win32'",
+    "psycopg-binary>=3.3.4, <4.0.0; sys_platform != 'win32'",
+    "celery>=5.6.3, <6.0.0",
+    "wolpie",
+    "pytz",
+    "loguru",
+]
+
+[project.optional-dependencies]
+# pip install ".[streamlit]"
+streamlit = [
+    "streamlit>=1.58.0, <2.0.0",
+    "Authlib>=1.6.9, <2.0.0",
+    "httpx>=0.28.0, <1.0.0",
+    "requests>=2.32.5, <3.0.0",
+    "cachetools>=6.2.0, <7.0.0",
+    "plotly>=6.6.0, <7.0.0",
+    "openpyxl>=3.1.5, <4.0.0",
+]
+# pip install ".[api]"
+api = [
+    "fastapi[standard]>=0.136.3, <1.0.0",
+    "sqlmodel>=0.0.38, <1.0.0",
+    "email-validator>=2.3.0, <3.0.0",
+]
+# pip install ".[cli]"
+cli = ["typer>=0.15.0, <1.0.0"]
+
+
+[dependency-groups]
+lint = ["pre-commit", "ty", "ruff"]
+test = [
+    "pytest",
+    "pytest-cov",
+    "pytest-pretty",
+    "testcontainers[postgres]",
+    "dirty-equals",
+]
+dev = [{ include-group = "test" }, { include-group = "lint" }]
+
+
+[tool.ty.environment]
+root = ["./src"]
+python = ".venv"
+
+[tool.ruff]
+line-length = 120
+indent-width = 4
+target-version = "py314"
+
+[tool.ruff.lint]
+select = [
+    "E",
+    "F",
+    "B",
+    "I",
+    "FAST",
+    "A",
+    "C4",
+    "DTZ",
+    "ISC",
+    "ICN",
+    "LOG",
+    "PT",
+    "Q",
+    "RET",
+    "SIM",
+    "TID",
+    "TC",
+    "ARG",
+    "PTH",
+    "N",
+    "PERF",
+    "RUF",
+]
+ignore = ["S101"]
+fixable = ["ALL"]
+unfixable = []
+dummy-variable-rgx = "^(_+|(_+[a-zA-Z0-9_]*[a-zA-Z0-9]+?))$"
+
+[tool.ruff.format]
+quote-style = "double"
+indent-style = "space"
+skip-magic-trailing-comma = false
+line-ending = "auto"
+
+[tool.pytest.ini_options]
+addopts = [
+    "--import-mode=importlib",
+    "-rfExX",
+    "--durations=10",
+    "--durations-min=1",
+]
+minversion = "9.0"
+testpaths = ["tests"]
+markers = ["integration: marks tests that are integration tests"]
+pythonpath = ["src"]
+
+[tool.coverage.run]
+source = ["./src"]
+omit = ["tests/*"]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "if self.debug:",
+    "if settings.DEBUG",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if 0:",
+    "if __name__ == .__main__.:",
+    "class .*\\bProtocol\\):",
+    "@(abc\\.)?abstractmethod",
+]
+show_missing = true

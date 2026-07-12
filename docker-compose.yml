@@ -1,0 +1,70 @@
+services:
+  nginx:
+    image: nginx:alpine
+    expose:
+      - "80"
+    volumes:
+      - ./config/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    depends_on:
+      api:
+        condition: service_healthy
+      app:
+        condition: service_healthy
+      rabbitmq:
+        condition: service_healthy
+    restart: unless-stopped
+
+  rabbitmq:
+    image: rabbitmq:4-management
+    hostname: rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
+      RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
+    # ref: https://www.rabbitmq.com/blog/2020/08/10/deploying-rabbitmq-to-kubernetes-whats-involved#use-a-persistent-volume-for-node-data
+    volumes:
+      - rabbitmq_data:/var/lib/rabbitmq/mnesia
+      - ./config/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf:ro
+    expose:
+      - "5672"   # AMQP (internal only)
+      - "15672"  # Management UI (internal only, nginx will proxy it)
+    healthcheck:
+      # ref: https://www.rabbitmq.com/docs/monitoring#stage-1
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  api:
+    build:
+      context: .
+      target: api
+    env_file: .env
+    expose:
+      - "8000"
+    deploy:
+      replicas: 2
+    restart: unless-stopped
+    stop_grace_period: 60s
+
+  app:
+    build:
+      context: .
+      target: streamlit
+    env_file: .env
+    expose:
+      - "8501"
+    volumes:
+      - ../files/app/secrets.toml:/app/src/.streamlit/secrets.toml:ro
+    restart: unless-stopped
+    stop_grace_period: 60s
+
+  cron:
+    build:
+      context: .
+      target: cli
+    env_file: .env
+    restart: unless-stopped
+
+volumes:
+  rabbitmq_data:
