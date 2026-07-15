@@ -14,7 +14,9 @@ dependencies = [
     "psycopg>=3.3.4, <4.0.0; sys_platform == 'win32'",
     "psycopg-binary>=3.3.4, <4.0.0; sys_platform != 'win32'",
     "celery>=5.6.3, <6.0.0",
-    "wolpie",
+    "google-api-python-client>=2.187.0,<3.0.0",
+    "google-auth-httplib2>=0.3.0,<1.0.0",
+    "google-auth-oauthlib>=1.2.0,<2.0.0",
     "pytz",
     "loguru",
 ]
@@ -53,7 +55,7 @@ dev = [{ include-group = "test" }, { include-group = "lint" }]
 
 
 [tool.ty.environment]
-root = ["./src"]
+root = ["./src", "./"]
 python = ".venv"
 
 [tool.ruff]

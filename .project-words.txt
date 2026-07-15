@@ -1,8 +1,12 @@
 autouse
 centered
 checkfirst
+core.gsheets
 datatreehouse
 Durbanville
+gfinance
+googleapiclient
+gsheets
 healthcheck
 ondelete
 pyproject
@@ -15,6 +19,5 @@ showlegend
 snapscan
 streamlit
 venv
-wolpie
 xaxis
 yaxis

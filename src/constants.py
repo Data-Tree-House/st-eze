@@ -1,12 +1,40 @@
+import queue
+from collections.abc import Generator
+from contextlib import contextmanager
 from datetime import tzinfo
 from pathlib import Path
+from typing import Any
 
 import pytz
 from PIL import Image
+from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 SRC_DIR = Path(__file__).resolve(strict=True).parent
 REPO_DIR = SRC_DIR.parent
+
+
+class RoundRobinPool:
+    def __init__(self):
+        self._queue = queue.Queue()
+        self.default_timeout: float | None = None
+
+    def add_items(self, items: list[str]):
+        if not items:
+            raise ValueError("No Workers to add to pool")
+
+        for item in items:
+            self._queue.put(item)
+
+    @contextmanager
+    def acquire_sheet_id(self, timeout: float | None = None) -> Generator[str]:
+        # explicit timeout wins; otherwise fall back to the pool's default
+        effective_timeout = timeout if timeout is not None else self.default_timeout
+        item = self._queue.get(timeout=effective_timeout)
+        try:
+            yield item
+        finally:
+            self._queue.put(item)
 
 
 class Constants(BaseSettings):
@@ -51,23 +79,27 @@ class Constants(BaseSettings):
 
     # =============== // GOOGLE SHEET // ===============
 
-    G_SHEET_ID_1: str
+    g_worker_ids: list[str]
+    g_worker_pool: RoundRobinPool = Field(default_factory=RoundRobinPool)
+    g_worker_pool_timeout: float = 300  # seconds
 
-    SCOPES: list[str] = [
+    g_integration_test_sheet_id: str = ""
+
+    scopes: list[str] = [
         "https://www.googleapis.com/auth/spreadsheets",
     ]
 
-    G_TYPE: str = "service_account"
-    G_PROJECT_ID: str
-    G_PRIVATE_KEY_ID: str
-    G_PRIVATE_KEY: str
-    G_CLIENT_EMAIL: str
-    G_CLIENT_ID: str
-    G_AUTH_URI: str = "https://accounts.google.com/o/oauth2/auth"
-    G_TOKEN_URI: str = "https://oauth2.googleapis.com/token"
-    G_AUTH_PROVIDER_X509_CERT_URL: str = "https://www.googleapis.com/oauth2/v1/certs"
-    G_CLIENT_X509_CERT_URL: str
-    G_UNIVERSE_DOMAIN: str = "googleapis.com"
+    g_type: str = "service_account"
+    g_project_id: str
+    g_private_key_id: str
+    g_private_key: str
+    g_client_email: str
+    g_client_id: str
+    g_auth_uri: str = "https://accounts.google.com/o/oauth2/auth"
+    g_token_uri: str = "https://oauth2.googleapis.com/token"
+    g_auth_provider_x509_cert_url: str = "https://www.googleapis.com/oauth2/v1/certs"
+    g_client_x509_cert_url: str
+    g_universe_domain: str = "googleapis.com"
 
     # =============== // UMAMI // ===============
 
@@ -82,6 +114,10 @@ class Constants(BaseSettings):
         extra="ignore",
         case_sensitive=False,
     )
+
+    def model_post_init(self, __context: Any) -> None:
+        self.g_worker_pool.add_items(self.g_worker_ids)
+        self.g_worker_pool.default_timeout = self.g_worker_pool_timeout
 
 
 c = Constants()  # type: ignore

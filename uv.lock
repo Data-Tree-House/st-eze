@@ -1777,6 +1777,9 @@ version = "0.1.0"
 source = { virtual = "." }
 dependencies = [
     { name = "celery" },
+    { name = "google-api-python-client" },
+    { name = "google-auth-httplib2" },
+    { name = "google-auth-oauthlib" },
     { name = "loguru" },
     { name = "pillow" },
     { name = "psycopg", marker = "sys_platform == 'win32'" },
@@ -1785,7 +1788,6 @@ dependencies = [
     { name = "pydantic-settings" },
     { name = "python-dotenv" },
     { name = "pytz" },
-    { name = "wolpie" },
 ]
 
 [package.optional-dependencies]
@@ -1838,6 +1840,9 @@ requires-dist = [
     { name = "celery", specifier = ">=5.6.3,<6.0.0" },
     { name = "email-validator", marker = "extra == 'api'", specifier = ">=2.3.0,<3.0.0" },
     { name = "fastapi", extras = ["standard"], marker = "extra == 'api'", specifier = ">=0.136.3,<1.0.0" },
+    { name = "google-api-python-client", specifier = ">=2.187.0,<3.0.0" },
+    { name = "google-auth-httplib2", specifier = ">=0.3.0,<1.0.0" },
+    { name = "google-auth-oauthlib", specifier = ">=1.2.0,<2.0.0" },
     { name = "httpx", marker = "extra == 'streamlit'", specifier = ">=0.28.0,<1.0.0" },
     { name = "loguru" },
     { name = "openpyxl", marker = "extra == 'streamlit'", specifier = ">=3.1.5,<4.0.0" },
@@ -1853,7 +1858,6 @@ requires-dist = [
     { name = "sqlmodel", marker = "extra == 'api'", specifier = ">=0.0.38,<1.0.0" },
     { name = "streamlit", marker = "extra == 'streamlit'", specifier = ">=1.58.0,<2.0.0" },
     { name = "typer", marker = "extra == 'cli'", specifier = ">=0.15.0,<1.0.0" },
-    { name = "wolpie" },
 ]
 provides-extras = ["streamlit", "api", "cli"]
 
@@ -2238,22 +2242,6 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/b3/8f/705086c9d734d3b663af0e9bb3d4de6578d08f46b1b101c2442fd9aecaa2/win32_setctime-1.2.0.tar.gz", hash = "sha256:ae1fdf948f5640aae05c511ade119313fb6a30d7eabe25fef9764dca5873c4c0", size = 4867, upload-time = "2024-12-07T15:28:28.314Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/e1/07/c6fe3ad3e685340704d314d765b7912993bcb8dc198f0e7a89382d37974b/win32_setctime-1.2.0-py3-none-any.whl", hash = "sha256:95d644c4e708aba81dc3704a116d8cbc974d70b3bdb8be1d150e36be6e9d1390", size = 4083, upload-time = "2024-12-07T15:28:26.465Z" },
-]
-
-[[package]]
-name = "wolpie"
-version = "0.5.0"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "google-api-python-client" },
-    { name = "google-auth-httplib2" },
-    { name = "google-auth-oauthlib" },
-    { name = "pytz" },
-    { name = "requests" },
-]
-sdist = { url = "https://files.pythonhosted.org/packages/3e/09/c29fab6156204c57aa37495e2623c72ce94248d2dc8afc12b566b67c21a7/wolpie-0.5.0.tar.gz", hash = "sha256:963a7f98bec136d59d79590635d6165c18c0343d16fdaa781de27e839031065b", size = 79826, upload-time = "2026-03-02T06:38:49.767Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/2d/79/244ac4088e760f86c57910c2895067bd31fbaef3d05090544f769c44bc07/wolpie-0.5.0-py3-none-any.whl", hash = "sha256:ae63ea50cb7e7c1d599c7f9c70dfbc6c98ca295ac7161935c0d857cf2567b14d", size = 80826, upload-time = "2026-03-02T06:38:50.769Z" },
 ]
 
 [[package]]
