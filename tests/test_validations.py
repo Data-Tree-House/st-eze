@@ -1,7 +1,9 @@
+from typing import Any
+
 import pytest
 
-from core.gfinance.exceptions import GFinanceError
-from core.gfinance.validations import validate_num_columns
+from core.gfinance.exceptions import GFinanceBadDataError, GFinanceError
+from core.gfinance.validations import validate_cell_output, validate_num_columns
 
 
 @pytest.mark.parametrize(
@@ -54,3 +56,35 @@ def test_validate_num_columns(
             validate_num_columns(**kwargs)
         return
     validate_num_columns(**kwargs)
+
+
+@pytest.mark.parametrize(
+    ("input_value", "exception"),
+    [
+        pytest.param(
+            "#N/A (When evaluating GOOGLEFINANCE, the query for the symbol: 'APL' returned no data.)",
+            {
+                "e": GFinanceBadDataError,
+                "regex": r"No data returned for symbol 'APL'",
+            },
+            id="No data returned",
+        ),
+        pytest.param(
+            "#N/A (Function GOOGLEFINANCE parameter 2 value is  invalid for the symbol specified.)",
+            {
+                "e": GFinanceError,
+                "regex": r"Function GOOGLEFINANCE parameter 2 value is\s+invalid for the symbol specified\.",
+            },
+            id="No match found",
+        ),
+    ],
+)
+def test_validate_cell_output(
+    input_value: Any,
+    exception: dict | None,
+):
+    if exception is not None:
+        with pytest.raises(exception["e"], match=exception["regex"]):
+            validate_cell_output(input_value)
+        return
+    validate_cell_output(input_value)

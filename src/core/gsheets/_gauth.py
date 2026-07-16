@@ -24,7 +24,7 @@ class CredentialsInfo(BaseModel):
 def credentials_from_env(prefix: str = "G") -> CredentialsInfo:
     """Load Google service account credentials from environment variables.
 
-    Args:
+    GFinanceArgs:
         prefix: The prefix for environment variable names. Default is "G".
 
     Returns:
@@ -65,7 +65,7 @@ class GAuth:
     This class manages Google service account credentials and provides
     authentication for Google API services.
 
-    Args:
+    GFinanceArgs:
         logger: Optional logger instance for logging.
         credentials_path: Path to the service account JSON file.
         credentials_info: CredentialsInfo object with service account details.

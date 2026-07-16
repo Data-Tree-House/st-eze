@@ -1,5 +1,6 @@
 from dataclasses import dataclass
 from enum import StrEnum
+from typing import Protocol
 
 
 class SheetNames(StrEnum):
@@ -36,8 +37,12 @@ class GFInterval(StrEnum):
 
 
 @dataclass
-class Args:
+class GFinanceArgs:
     attribute: GFAttribute
     num_days: int
     interval: GFInterval
     ticker: str
+
+
+class ExtractErrorMsgFunc(Protocol):
+    def __call__(self, msg: str) -> str | None: ...

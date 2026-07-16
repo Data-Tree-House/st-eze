@@ -51,7 +51,7 @@ class GSheets:
         GSHEETS_API_VERSION: The Google Sheets API version to use.
         GSHEETS_NUM_RETRIES: Number of retries for failed API requests.
 
-    Args:
+    GFinanceArgs:
         g_auth: GAuth instance with valid credentials.
         spreadsheet_id: The ID of the Google Spreadsheet to interact with.
 
