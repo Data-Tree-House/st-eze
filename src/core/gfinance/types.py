@@ -1,12 +1,16 @@
 from dataclasses import dataclass
+from datetime import datetime
 from enum import StrEnum
 from typing import Protocol
+
+from pydantic_settings import BaseSettings
 
 
 class SheetNames(StrEnum):
     ARGS = "args"
-    RESULT = "result"
-    HISTORIC_RESULT = "historic_result"
+    ALL_ATTRIBUTES = "all_attributes"
+    ONE_ATTRIBUTE = "one_attribute"
+    HISTORIC_RESULT = "historic_attribute"
 
 
 class GFAttribute(StrEnum):
@@ -29,6 +33,28 @@ class GFAttribute(StrEnum):
     closeyest = "closeyest"
     shares = "shares"
     currency = "currency"
+
+
+class AttributeResult(BaseSettings):
+    price: float
+    priceopen: float | None
+    high: float | None
+    low: float | None
+    volume: int | None
+    marketcap: int | None
+    tradetime: datetime | None
+    datadelay: int | None
+    volumeavg: int | None
+    pe: float | None
+    eps: float | None
+    high52: float | None
+    low52: float | None
+    change: float | None
+    beta: float | None
+    changepct: float | None
+    closeyest: float | None
+    shares: int | None
+    currency: str | None
 
 
 class GFInterval(StrEnum):

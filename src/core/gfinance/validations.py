@@ -32,10 +32,10 @@ def validate_num_columns(data: list[list], num_columns: int) -> None:
 
 def validate_num_rows(data: list[list], num_rows: int) -> None:
     if not data:
-        raise GFinanceError(f"Expected {num_rows} rows(s), got 0")
+        raise GFinanceError(f"Expected {num_rows} row(s), got 0")
     actual_len = len(data)
     if actual_len != num_rows:
-        raise GFinanceError(f"Expected {num_rows}, got {actual_len}")
+        raise GFinanceError(f"Expected {num_rows} row(s), got {actual_len}")
 
 
 def validate_rows_and_columns(data: list[list], num_rows: int, num_columns: int) -> None:
