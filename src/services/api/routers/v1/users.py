@@ -8,3 +8,8 @@ router: APIRouter = APIRouter(
     dependencies=[],
     responses={404: {"description": "Not found"}},
 )
+
+
+@router.get("/")
+def demo_user():
+    return "hello"

@@ -6,7 +6,7 @@ from dirty_equals import IsAnyStr, IsNumber, IsNumeric
 from constants import c
 from core.gfinance import read_current_args, read_one_attribute, set_args
 from core.gfinance.exceptions import GFinanceBadDataError
-from core.gfinance.finance import GFinanceError, get_ticker_price, read_all_attributes
+from core.gfinance.finance import GFinanceError, get_ticker_attributes, read_all_attributes
 from core.gfinance.types import GFAttribute, GFinanceArgs, GFInterval, SheetNames
 from core.gsheets import GAuth, gt
 
@@ -51,11 +51,11 @@ def d_test_read_result_integration(g_auth: GAuth):
 def d_test_get_ticker_price_integration(g_auth: GAuth):
     with c.g_worker_pool.acquire_sheet_id() as sheet_id:
         assert (
-            get_ticker_price(
+            get_ticker_attributes(
                 ticker="JSE:BAT",
                 sheet_id=sheet_id,
                 g_auth=g_auth,
-            )
+            ).price
             == IsNumeric()
         )
 
@@ -269,7 +269,7 @@ class TestGetTickerPrice:
             ticker="JSE:SOL",
         )
         new_args = GFinanceArgs(
-            attribute=GFAttribute.price,
+            attribute=GFAttribute.priceopen,
             num_days=365,
             interval=GFInterval.DAILY,
             ticker="JSE:BAT",
@@ -283,7 +283,7 @@ class TestGetTickerPrice:
             patch("core.gfinance.finance.set_args") as mock_set_args,
             patch("core.gfinance.finance.read_all_attributes", return_value=mock_attribute_result) as mock_read_result,
         ):
-            returned_value = get_ticker_price(
+            returned_value = get_ticker_attributes(
                 ticker="JSE:BAT",
                 sheet_id=sheet_id,
                 g_auth=mock_g_auth,
@@ -301,4 +301,4 @@ class TestGetTickerPrice:
                 sheet_id=sheet_id,
                 g_auth=mock_g_auth,
             )
-            assert returned_value == 12
+            assert returned_value.price == 12

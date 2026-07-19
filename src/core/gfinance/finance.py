@@ -108,7 +108,7 @@ def read_all_attributes(
             sheet=SheetNames.ALL_ATTRIBUTES,
         )
         _data = cell_value["values"]
-        validate_rows_and_columns(_data, 19, 2)
+        validate_rows_and_columns(_data, 20, 2)
         data = dict(_data)
 
         validate_cell_output(data["price"])
@@ -179,17 +179,16 @@ def set_args(
         ) from e
 
 
-def get_ticker_price(
+def get_ticker_attributes(
     ticker: str,
     sheet_id: str,
     g_auth: GAuth | None = None,
-) -> int:
+) -> AttributeResult:
     try:
         args = read_current_args(
             sheet_id=sheet_id,
             g_auth=g_auth,
         )
-        args.attribute = GFAttribute.price
         args.ticker = ticker
 
         set_args(
@@ -201,9 +200,11 @@ def get_ticker_price(
             sheet_id=sheet_id,
             g_auth=g_auth,
         )
-        value = attrs.price
-        logger.debug(f"Ticker Price {ticker}: {value:,}", extra={"sheet_id": sheet_id})
-        return value
+        logger.debug(
+            f"Ticker {ticker} attributes fetched. Price: {attrs.price:,}",
+            extra={"sheet_id": sheet_id, "ticker_attributes": attrs.model_dump_json()},
+        )
+        return attrs
     except (GFinanceError, GFinanceBadDataError) as e:
         raise e
     except Exception as e:

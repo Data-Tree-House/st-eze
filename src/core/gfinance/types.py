@@ -15,6 +15,7 @@ class SheetNames(StrEnum):
 
 class GFAttribute(StrEnum):
     price = "price"
+    name = "name"
     priceopen = "priceopen"
     high = "high"
     low = "low"
@@ -37,6 +38,7 @@ class GFAttribute(StrEnum):
 
 class AttributeResult(BaseSettings):
     price: float
+    name: str | None
     priceopen: float | None
     high: float | None
     low: float | None

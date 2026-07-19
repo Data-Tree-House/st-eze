@@ -1,7 +1,10 @@
+from functools import lru_cache
+
 from constants import c
 from core.gsheets import CredentialsInfo, GAuth, GSheets
 
 
+@lru_cache
 def get_auth() -> GAuth:
     return GAuth(
         credentials_info=CredentialsInfo(

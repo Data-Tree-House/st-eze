@@ -1,4 +1,5 @@
 import socket
+import sys
 import time
 from contextlib import asynccontextmanager
 
@@ -9,6 +10,10 @@ from constants import c
 from services.api.routers.v1 import router as router_v1
 from task import app as celery_app
 from task import refresh_task
+
+if c.structured_logging:
+    logger.remove()
+    logger.add(sys.stdout, serialize=True)
 
 
 @asynccontextmanager
@@ -48,7 +53,15 @@ async def log_requests(request: Request, call_next):
         f"[{client_host}] Request: "
         f"{request.method} {request.url} - "
         f"Status: {response.status_code} - "
-        f"Time: {process_time:.4f}s"
+        f"Time: {process_time:.4f}s",
+        client_host=client_host,
+        method=request.method,
+        url=request.url,
+        path_params=request.path_params,
+        query_params=request.query_params,
+        headers=request.headers,
+        status_code=response.status_code,
+        response_time=process_time,
     )
     return response
 

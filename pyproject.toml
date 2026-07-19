@@ -34,7 +34,7 @@ streamlit = [
 ]
 # pip install ".[api]"
 api = [
-    "fastapi[standard]>=0.136.3, <1.0.0",
+    "fastapi[standard]>=0.139.2, <1.0.0",
     "sqlmodel>=0.0.38, <1.0.0",
     "email-validator>=2.3.0, <3.0.0",
 ]

@@ -40,8 +40,12 @@ class RoundRobinPool:
 class Constants(BaseSettings):
     # =============== // METADATA // ===============
 
-    title: str = "Demo App"
-    description: str = "A demo app"
+    title: str = "eZe"
+    description: str = "An application to manage your stocks with ease!"
+
+    # =============== // LOGGING // ===============
+
+    structured_logging: bool = True
 
     # =============== // Database Configurations // ===============
     # dialect[+driver]://user:password@host/dbname[?key=value..]
