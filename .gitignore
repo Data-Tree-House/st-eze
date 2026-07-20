@@ -34,5 +34,6 @@ site/
 .coverage
 
 tests/tmp/**
+*.db
 
 !.gitkeep

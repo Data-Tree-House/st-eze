@@ -2,15 +2,18 @@ from typing import Annotated
 
 from fastapi import (
     APIRouter,
+    Depends,
     HTTPException,
     Query,
     status,
 )
 from loguru import logger
-from pydantic import BaseModel, Field
+from pydantic import BaseModel
+from sqlmodel import Session
 
-from constants import c
-from core.gfinance import GFinanceBadDataError, GFinanceError, get_ticker_attributes
+from core.eze import get_stock_price
+from core.gfinance import GFinanceBadDataError, GFinanceError
+from services.api.dependencies import get_session
 
 router: APIRouter = APIRouter(
     prefix="/stock",
@@ -24,7 +27,7 @@ class FilterParams(BaseModel):
     model_config = {"extra": "forbid"}
 
     ticker: str
-    exchange: str | None = Field(default=None)
+    exchange: str
 
 
 @router.get("/price")
@@ -44,20 +47,14 @@ def price(
             }
         ),
     ],
+    session: Annotated[Session, Depends(get_session)],
 ) -> float:
-    """Fetches the price of a stock in an exchange. When the exchange is not provided, it will assume it's the USA's
-    exchange. Any foreign exchange, like the JSE, will have to be specified."""
-    _ticker = q.ticker
-    if q.exchange:
-        _ticker = f"{q.exchange}:{_ticker}"
-
     try:
-        with c.g_worker_pool.acquire_sheet_id() as sheet_id:
-            attrs = get_ticker_attributes(
-                ticker=_ticker,
-                sheet_id=sheet_id,
-            )
-            return attrs.price
+        return get_stock_price(
+            session=session,
+            exchange=q.exchange,
+            ticker=q.ticker,
+        )
     except GFinanceBadDataError as e:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,

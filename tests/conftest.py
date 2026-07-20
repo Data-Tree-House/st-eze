@@ -3,8 +3,11 @@ from pathlib import Path
 from typing import TYPE_CHECKING
 
 import pytest
+from sqlalchemy import Engine
+from sqlmodel import create_engine
 
 from constants import c
+from core.db import m
 from core.gsheets import CredentialsInfo, GAuth
 
 if TYPE_CHECKING:
@@ -40,19 +43,20 @@ def g_auth() -> GAuth:
     )
 
 
-# @pytest.fixture(scope="class")
-# def mock_engine() -> Generator[Engine]:
-#     """Create a fresh in-memory SQLite database for each test."""
-#     engine = create_engine("sqlite:///:memory:", echo=True)
-#     crud.create_all_tables(engine)
+@pytest.fixture(scope="class")
+def mock_engine() -> Generator[Engine]:
+    """Create a fresh in-memory SQLite database for each test."""
+    # engine = create_engine("sqlite:///:memory:", echo=True)
+    engine = create_engine("sqlite:///./local.db", echo=True)
+    m.create_all_tables(engine)
 
-#     yield engine
+    yield engine
 
-#     # However, there are many cases where it is desirable that all connection resources referred to by the Engine be
-#     # completely closed out. It's generally not a good idea to rely on Python garbage collection for this to occur for
-#     # these cases; instead, the Engine can be explicitly disposed using the Engine.dispose() method.
-#     # ref: https://docs.sqlalchemy.org/en/21/core/connections.html
-#     engine.dispose()
+    # However, there are many cases where it is desirable that all connection resources referred to by the Engine be
+    # completely closed out. It's generally not a good idea to rely on Python garbage collection for this to occur for
+    # these cases; instead, the Engine can be explicitly disposed using the Engine.dispose() method.
+    # ref: https://docs.sqlalchemy.org/en/21/core/connections.html
+    engine.dispose()
 
 
 # @pytest.fixture(scope="module")

@@ -24,6 +24,7 @@ def get_auth() -> GAuth:
     )
 
 
+@lru_cache
 def get_client(
     sheet_id: str,
     g_auth: GAuth | None = None,
