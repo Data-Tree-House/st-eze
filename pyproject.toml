@@ -40,7 +40,7 @@ api = [
     "email-validator>=2.3.0, <3.0.0",
 ]
 # pip install ".[cli]"
-cli = ["typer>=0.15.0, <1.0.0"]
+cli = ["typer>=0.26.8,<1.0.0"]
 
 
 [dependency-groups]
