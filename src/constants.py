@@ -1,9 +1,6 @@
-import queue
-from collections.abc import Generator
-from contextlib import contextmanager
+import tomllib
 from datetime import tzinfo
 from pathlib import Path
-from typing import Any
 
 import pytz
 from PIL import Image
@@ -14,27 +11,11 @@ SRC_DIR = Path(__file__).resolve(strict=True).parent
 REPO_DIR = SRC_DIR.parent
 
 
-class RoundRobinPool:
-    def __init__(self):
-        self._queue = queue.Queue()
-        self.default_timeout: float | None = None
-
-    def add_items(self, items: list[str]):
-        if not items:
-            raise ValueError("No Workers to add to pool")
-
-        for item in items:
-            self._queue.put(item)
-
-    @contextmanager
-    def acquire_sheet_id(self, timeout: float | None = None) -> Generator[str]:
-        # explicit timeout wins; otherwise fall back to the pool's default
-        effective_timeout = timeout if timeout is not None else self.default_timeout
-        item = self._queue.get(timeout=effective_timeout)
-        try:
-            yield item
-        finally:
-            self._queue.put(item)
+def get_project_version():
+    toml_path = REPO_DIR / "pyproject.toml"
+    with toml_path.open("rb") as f:
+        data = tomllib.load(f)
+    return data.get("project", {}).get("version", "unknown")
 
 
 class Constants(BaseSettings):
@@ -42,6 +23,7 @@ class Constants(BaseSettings):
 
     title: str = "eZe"
     description: str = "An application to manage your stocks with ease!"
+    version: str = Field(default_factory=get_project_version)
 
     # =============== // LOGGING // ===============
 
@@ -76,6 +58,11 @@ class Constants(BaseSettings):
     rmq_port: int = 5672
     rmq_host: str
 
+    # =============== // REDIS // ===============
+
+    redis_port: int = 6379
+    redis_host: str = "redis"
+
     # =============== // LINKS // ===============
 
     datatreehouse_url: str = "https://datatreehouse.org"
@@ -84,7 +71,6 @@ class Constants(BaseSettings):
     # =============== // GOOGLE SHEET // ===============
 
     g_worker_ids: list[str]
-    g_worker_pool: RoundRobinPool = Field(default_factory=RoundRobinPool)
     g_worker_pool_timeout: float = 300  # seconds
 
     g_integration_test_sheet_id: str = ""
@@ -118,10 +104,6 @@ class Constants(BaseSettings):
         extra="ignore",
         case_sensitive=False,
     )
-
-    def model_post_init(self, __context: Any) -> None:
-        self.g_worker_pool.add_items(self.g_worker_ids)
-        self.g_worker_pool.default_timeout = self.g_worker_pool_timeout
 
 
 c = Constants()  # type: ignore

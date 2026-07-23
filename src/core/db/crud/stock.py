@@ -90,6 +90,7 @@ def add_stock_history_entry(
     change_pct: float | None = None,
     close_yesterday: float | None = None,
     shares: int | None = None,
+    currency: str | None = None,
 ) -> m.StockHistory:
     new_entry = m.StockHistory(
         stock_id=stock_id,
@@ -111,6 +112,7 @@ def add_stock_history_entry(
         change_pct=change_pct,
         close_yesterday=close_yesterday,
         shares=shares,
+        currency=currency,
     )
     new_entry.history_hash = _compute_history_hash(new_entry)
 

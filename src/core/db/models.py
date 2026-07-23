@@ -73,6 +73,7 @@ class StockHistory(TableBase, table=True):
     change_pct: float | None
     close_yesterday: float | None
     shares: int | None
+    currency: str | None
 
     stock: Stock | None = Relationship(back_populates="stock_history")
 

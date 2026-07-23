@@ -28,14 +28,15 @@ app = FastAPI(
     root_path="/api",
     title=c.title,
     description=c.description,
-    summary="",
+    version=c.version,
+    summary="Summary",
     terms_of_service="",
     docs_url="/docs",
     license_info={
         "name": "MIT",
         "url": "https://opensource.org/license/mit",
     },
-    redoc_url=None,
+    redoc_url="/redocs",
     lifespan=lifespan,
 )
 

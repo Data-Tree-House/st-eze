@@ -8,12 +8,12 @@ from fastapi import (
     status,
 )
 from loguru import logger
-from pydantic import BaseModel
 from sqlmodel import Session
 
-from core.eze import get_stock_price
+from core.eze import get_stock
 from core.gfinance import GFinanceBadDataError, GFinanceError
-from services.api.dependencies import get_session
+from services.api.dependencies import RateLimit, get_session, gsheet_pool
+from services.api.models import PriceFilterParams, StockPrice, error_responses, response_headers
 
 router: APIRouter = APIRouter(
     prefix="/stock",
@@ -23,37 +23,40 @@ router: APIRouter = APIRouter(
 )
 
 
-class FilterParams(BaseModel):
-    model_config = {"extra": "forbid"}
-
-    ticker: str
-    exchange: str
-
-
-@router.get("/price")
+@router.get(
+    "/price",
+    dependencies=[Depends(RateLimit(max_requests=2, window=5))],
+    response_model=StockPrice,
+    responses={
+        status.HTTP_400_BAD_REQUEST: error_responses.BAD_STOCK_REQUEST_RESPONSE,
+        status.HTTP_429_TOO_MANY_REQUESTS: error_responses.RATE_LIMIT_RESPONSE,
+        status.HTTP_500_INTERNAL_SERVER_ERROR: error_responses.INTERNAL_SERVER_ERROR_RESPONSE,
+        status.HTTP_200_OK: {"headers": response_headers.GLOBAL_HEADERS},
+    },
+)
 def price(
-    q: Annotated[
-        FilterParams,
-        Query(
-            openapi_examples={
-                "JSE:SOL": {
-                    "summary": "Fetches the price of Sasol from the JSE in ZAC",
-                    "description": "When you want an exchange outside the USA, you need to specify the exchange.",
-                    "value": {
-                        "ticker": "SOL",
-                        "exchange": "JSE",
-                    },
-                }
-            }
-        ),
-    ],
+    q: Annotated[PriceFilterParams, Query()],
+    sheet_id: Annotated[str, Depends(gsheet_pool)],
     session: Annotated[Session, Depends(get_session)],
-) -> float:
+):
+    """Will return the current stock's price in the currency of that exchange. For example,
+    stocks on the JSE will be returned in ZAC.
+
+    **Note:** stocks that are not on our system will take long to fetch the first round trip. After that,
+    the price will be updated in the background every 20 minutes.
+
+    *The prices are not available in real time.*
+    """
     try:
-        return get_stock_price(
+        stock = get_stock(
             session=session,
+            sheet_id=sheet_id,
             exchange=q.exchange,
             ticker=q.ticker,
+        )
+        return StockPrice(
+            price=stock.price,
+            currency=stock.currency,
         )
     except GFinanceBadDataError as e:
         raise HTTPException(

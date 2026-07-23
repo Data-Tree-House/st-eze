@@ -35,6 +35,20 @@ services:
       retries: 5
     restart: unless-stopped
 
+  redis:
+    image: redis:7-alpine
+    hostname: redis
+    volumes:
+      - redis_data:/data
+    expose:
+      - "6379"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
   api:
     build:
       context: .
@@ -42,6 +56,9 @@ services:
     env_file: .env
     expose:
       - "8000"
+    depends_on:
+      redis:
+        condition: service_healthy
     deploy:
       replicas: 2
     restart: unless-stopped
@@ -56,6 +73,9 @@ services:
       - "8501"
     volumes:
       - ../files/app/secrets.toml:/app/src/.streamlit/secrets.toml:ro
+    depends_on:
+      redis:
+        condition: service_healthy
     restart: unless-stopped
     stop_grace_period: 60s
 
@@ -64,7 +84,11 @@ services:
       context: .
       target: cli
     env_file: .env
+    depends_on:
+      redis:
+        condition: service_healthy
     restart: unless-stopped
 
 volumes:
   rabbitmq_data:
+  redis_data:
