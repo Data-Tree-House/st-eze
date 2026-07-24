@@ -7,6 +7,7 @@ from fastapi import FastAPI, Request, Response
 from loguru import logger
 
 from constants import c
+from services.api.models import response_headers
 from services.api.routers.v1 import router as router_v1
 from task import app as celery_app
 from task import refresh_task
@@ -27,9 +28,9 @@ async def lifespan(app: FastAPI):  # noqa
 app = FastAPI(
     root_path="/api",
     title=c.title,
-    description=c.description,
+    # summary=c.description,
     version=c.version,
-    summary="Summary",
+    # description="Summary",
     terms_of_service="",
     docs_url="/docs",
     license_info={
@@ -48,7 +49,7 @@ async def log_requests(request: Request, call_next):
     start_time: float = time.time()
     response = await call_next(request)
     process_time = time.time() - start_time
-    response.headers["X-Process-Time"] = str(process_time)
+    response.headers[response_headers.HeaderKey.process_time] = str(process_time)
     client_host = request.client.host if request.client else "unknown"
     logger.debug(
         f"[{client_host}] Request: "

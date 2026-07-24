@@ -1,12 +1,8 @@
-#!/usr/bin/env python3
-"""
-Fetch stock prices from a local API for a list of JSE tickers,
-using a ThreadPoolExecutor for concurrency.
-"""
-
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
 import requests
+from requests.adapters import HTTPAdapter
+from urllib3.util.retry import Retry
 
 BASE_URL = "http://127.0.0.1:8000/api/v1/stock/price"
 MAX_WORKERS = 10  # adjust based on how much load the local API can handle
@@ -267,41 +263,45 @@ JSE:MED
 """.split()
 
 
+def make_session():
+    session = requests.Session()
+    retry = Retry(
+        total=5,  # max retry attempts
+        backoff_factor=1,  # 1s, 2s, 4s, 8s... when no Retry-After
+        status_forcelist=[429, 500, 502, 503, 504],
+        respect_retry_after_header=True,  # honors Retry-After if the server sends it
+        allowed_methods=["GET"],
+    )
+    adapter = HTTPAdapter(max_retries=retry)
+    session.mount("http://", adapter)
+    session.mount("https://", adapter)
+    return session
+
+
+# One session per thread would be safer, but a single shared Session
+# is fine here since requests' Session is thread-safe for simple GETs.
+session = make_session()
+
+
 def fetch_price(ticker_str):
-    """
-    ticker_str is like 'JSE:PRX'. Splits into exchange and ticker,
-    calls the API, and returns a result dict.
-    """
     exchange, ticker = ticker_str.split(":", 1)
     params = {"ticker": ticker, "exchange": exchange}
     headers = {"accept": "application/json"}
-
     try:
-        response = requests.get(BASE_URL, params=params, headers=headers)
+        response = session.get(BASE_URL, params=params, headers=headers, timeout=10)
         response.raise_for_status()
-        return {
-            "ticker": ticker_str,
-            "status": "ok",
-            "data": response.json(),
-        }
+        return {"ticker": ticker_str, "status": "ok", "data": response.json()}
     except requests.exceptions.RequestException as e:
-        return {
-            "ticker": ticker_str,
-            "status": "error",
-            "error": str(e),
-        }
+        return {"ticker": ticker_str, "status": "error", "error": str(e)}
 
 
 def main():
     results = []
-
     with ThreadPoolExecutor(max_workers=MAX_WORKERS) as executor:
         future_to_ticker = {executor.submit(fetch_price, t): t for t in TICKERS}
-
         for future in as_completed(future_to_ticker):
             result = future.result()
             results.append(result)
-
             if result["status"] == "ok":
                 print(f"[OK]    {result['ticker']}: {result['data']}")
             else:
@@ -310,7 +310,6 @@ def main():
     ok_count = sum(1 for r in results if r["status"] == "ok")
     err_count = len(results) - ok_count
     print(f"\nDone. {ok_count} succeeded, {err_count} failed out of {len(results)} total.")
-
     return results
 
 
